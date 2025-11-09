@@ -9,7 +9,7 @@ npm install
 npm run dev
 ```
 
-App runs at [http://localhost:3000](http://localhost:3000)
+App runs at [http://localhost:5173](http://localhost:5173)
 
 > **Note:** Configured to work with online editors and cloud platforms. No additional host configuration needed!
 
