@@ -13,6 +13,11 @@ App runs at [http://localhost:5173](http://localhost:5173)
 
 > **Note:** Configured to work with online editors and cloud platforms. No additional host configuration needed!
 
+### 🔥 Hot Reload Enabled
+- **Fast Refresh** - Instant updates without losing component state
+- **HMR (Hot Module Replacement)** - Changes reflect immediately
+- **Error Overlay** - See errors directly on the page
+
 ## Tech Stack
 
 - React 18 + TypeScript
