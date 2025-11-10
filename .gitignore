@@ -2,9 +2,11 @@
 node_modules/
 package-lock.json
 
-# Build output
+# Vite cache and build
+.vite/
 dist/
-build/
+dist-ssr/
+*.local
 
 # Environment variables
 .env
@@ -19,6 +21,7 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
+*.log
 
 # Editor directories and files
 .vscode/
@@ -35,11 +38,8 @@ coverage/
 *.lcov
 .nyc_output
 
-# Temporary files
+# Cache and temporary files
+.cache/
 *.tmp
 *.temp
-.cache/
-
-# Debug
-*.log
 
