@@ -145,10 +145,10 @@ function App() {
             </svg>
           </div>
           <h1 className="text-5xl font-bold bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 bg-clip-text text-transparent mb-4">
-            Employee Management
+            Employee Management1
           </h1>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">
-            Streamline your workforce management with our modern employee tracking system.
+            Modern employee tracker for your team.
           </p>
         </div>
 
