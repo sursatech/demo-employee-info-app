@@ -1,49 +1,33 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Employee, EmployeeFormData } from './types/employee';
+import { useEmployees } from './hooks/useEmployees';
 
-// Employee type
-interface Employee {
-  id: number;
-  name: string;
-  email: string;
-  position: string;
-  department: string;
-}
-
-// Mock initial data
-const INITIAL_EMPLOYEES: Employee[] = [
-  {
-    id: 1,
-    name: 'Sarah Johnson',
-    email: 'sarah.johnson@company.com',
-    position: 'Senior Software Engineer',
-    department: 'Engineering'
-  },
-  {
-    id: 2,
-    name: 'Michael Chen',
-    email: 'michael.chen@company.com',
-    position: 'Product Manager',
-    department: 'Product'
-  }
-];
+// Helper function to reset form
+const getEmptyForm = (): EmployeeFormData => ({
+  name: '',
+  email: '',
+  position: '',
+  department: ''
+});
 
 function App() {
-  const [employees, setEmployees] = useState<Employee[]>(INITIAL_EMPLOYEES);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const {
+    employees,
+    loading,
+    error,
+    createEmployee,
+    updateEmployee,
+    deleteEmployee,
+    clearError
+  } = useEmployees();
+
   const [modalOpen, setModalOpen] = useState(false);
   const [editEmployee, setEditEmployee] = useState<Employee | null>(null);
-  const [form, setForm] = useState({ 
-    name: '', 
-    email: '', 
-    position: '', 
-    department: ''
-  });
+  const [form, setForm] = useState<EmployeeFormData>(getEmptyForm());
   const [submitting, setSubmitting] = useState(false);
-  const [nextId, setNextId] = useState(3); // For generating new IDs
 
   // Open modal for create or edit
-  const openModal = (employee?: Employee) => {
+  const openModal = useCallback((employee?: Employee) => {
     if (employee) {
       setEditEmployee(employee);
       setForm({ 
@@ -54,27 +38,39 @@ function App() {
       });
     } else {
       setEditEmployee(null);
-      setForm({ 
-        name: '', 
-        email: '', 
-        position: '', 
-        department: ''
-      });
+      setForm(getEmptyForm());
     }
     setModalOpen(true);
-  };
+    clearError();
+  }, [clearError]);
 
   // Close modal
-  const closeModal = () => {
+  const closeModal = useCallback(() => {
     setModalOpen(false);
     setEditEmployee(null);
-    setForm({ 
-      name: '', 
-      email: '', 
-      position: '', 
-      department: ''
-    });
-  };
+    setForm(getEmptyForm());
+    clearError();
+  }, [clearError]);
+
+  // Handle ESC key to close modal
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && modalOpen) {
+        closeModal();
+      }
+    };
+
+    if (modalOpen) {
+      document.addEventListener('keydown', handleEscape);
+      // Prevent body scroll when modal is open
+      document.body.style.overflow = 'hidden';
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEscape);
+      document.body.style.overflow = 'unset';
+    };
+  }, [modalOpen, closeModal]);
 
   // Handle form change
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -82,55 +78,34 @@ function App() {
   };
 
   // Create or update employee (in-memory)
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
-    setError(null);
     
-    // Simulate async operation
-    setTimeout(() => {
-      try {
-        const employeeData = {
-          name: form.name,
-          email: form.email,
-          position: form.position,
-          department: form.department
-        };
-
-        if (editEmployee) {
-          // Update existing employee
-          setEmployees(employees.map(emp => 
-            emp.id === editEmployee.id 
-              ? { ...employeeData, id: editEmployee.id }
-              : emp
-          ));
-        } else {
-          // Create new employee
-          const newEmployee: Employee = {
-            ...employeeData,
-            id: nextId
-          };
-          setEmployees([...employees, newEmployee]);
-          setNextId(nextId + 1);
-        }
-        
-        closeModal();
-      } catch (err: any) {
-        setError(err.message || 'Failed to save employee');
-      } finally {
-        setSubmitting(false);
+    try {
+      if (editEmployee) {
+        await updateEmployee(editEmployee.id, form);
+      } else {
+        await createEmployee(form);
       }
-    }, 500); // Simulate network delay
+      closeModal();
+    } catch (err) {
+      // Error is handled by the hook, but log for debugging
+      console.error('Failed to save employee:', err);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   // Delete employee (in-memory)
-  const handleDelete = (id: number) => {
+  const handleDelete = async (id: number) => {
     if (!window.confirm('Are you sure you want to delete this employee?')) return;
-    setError(null);
+    
     try {
-      setEmployees(employees.filter(emp => emp.id !== id));
-    } catch (err: any) {
-      setError(err.message || 'Failed to delete employee');
+      await deleteEmployee(id);
+    } catch (err) {
+      // Error is handled by the hook, but log for debugging
+      console.error('Failed to delete employee:', err);
     }
   };
 
@@ -145,7 +120,7 @@ function App() {
             </svg>
           </div>
           <h1 className="text-5xl font-bold bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 bg-clip-text text-transparent mb-4">
-            Employee Management1
+            Employee Management
           </h1>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">
             Modern employee tracker for your team.
@@ -190,7 +165,7 @@ function App() {
                   </svg>
                 </div>
                 <div className="ml-3">
-                  <h3 className="text-lg font-medium text-red-800">Connection Error</h3>
+                  <h3 className="text-lg font-medium text-red-800">Error</h3>
                   <p className="text-red-700 mt-1">{error}</p>
                 </div>
               </div>
@@ -299,7 +274,12 @@ function App() {
 
       {/* Modal */}
       {modalOpen && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-50 p-4">
+        <div 
+          className="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-50 p-4"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="modal-title"
+        >
           <div className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl relative transform transition-all">
             <div className="absolute top-6 right-6">
               <button
@@ -319,7 +299,7 @@ function App() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                   </svg>
                 </div>
-                <h2 className="text-3xl font-bold text-gray-900 mb-2">
+                <h2 id="modal-title" className="text-3xl font-bold text-gray-900 mb-2">
                   {editEmployee ? 'Update Employee' : 'Add New Employee'}
                 </h2>
                 <p className="text-gray-600 text-lg">
