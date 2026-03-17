@@ -10,6 +10,9 @@ const getEmptyForm = (): EmployeeFormData => ({
   department: ''
 });
 
+const VALID_USERNAME = 'admin';
+const VALID_PASSWORD = 'admin';
+
 function App() {
   const {
     employees,
@@ -25,6 +28,12 @@ function App() {
   const [editEmployee, setEditEmployee] = useState<Employee | null>(null);
   const [form, setForm] = useState<EmployeeFormData>(getEmptyForm());
   const [submitting, setSubmitting] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [loginForm, setLoginForm] = useState({
+    username: '',
+    password: ''
+  });
+  const [loginError, setLoginError] = useState('');
 
   // Open modal for create or edit
   const openModal = useCallback((employee?: Employee) => {
@@ -108,6 +117,101 @@ function App() {
       console.error('Failed to delete employee:', err);
     }
   };
+
+  const handleLoginChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setLoginForm({ ...loginForm, [e.target.name]: e.target.value });
+    if (loginError) {
+      setLoginError('');
+    }
+  };
+
+  const handleLoginSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    if (
+      loginForm.username === VALID_USERNAME &&
+      loginForm.password === VALID_PASSWORD
+    ) {
+      setIsAuthenticated(true);
+      setLoginError('');
+      setLoginForm({ username: '', password: '' });
+      return;
+    }
+
+    setLoginError('Invalid credentials. Use username "admin" and password "admin".');
+  };
+
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center px-4 py-10">
+        <div className="w-full max-w-md bg-white/90 backdrop-blur-sm rounded-3xl shadow-2xl border border-white/40 p-8">
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-2xl mb-5 shadow-lg">
+              <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 11c0 .552-.224 1.052-.586 1.414A1.994 1.994 0 0110 13H8v3h2a5 5 0 005-5V8h-3v3zM5 12a7 7 0 1114 0v2a2 2 0 01-2 2h-1v-3h1v-1a5 5 0 10-10 0v1h1v3H7a2 2 0 01-2-2v-2z" />
+              </svg>
+            </div>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">Employee Login</h1>
+            <p className="text-gray-600">Sign in to access the employee management page.</p>
+          </div>
+
+          <div className="mb-6 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+            Default credentials: Username <span className="font-semibold">admin</span> and Password{' '}
+            <span className="font-semibold">admin</span>
+          </div>
+
+          <form onSubmit={handleLoginSubmit} className="space-y-5">
+            <div>
+              <label htmlFor="username" className="block text-sm font-semibold text-gray-700 mb-2">
+                Username
+              </label>
+              <input
+                id="username"
+                name="username"
+                type="text"
+                value={loginForm.username}
+                onChange={handleLoginChange}
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200"
+                placeholder="Enter username"
+                autoComplete="username"
+                required
+              />
+            </div>
+
+            <div>
+              <label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-2">
+                Password
+              </label>
+              <input
+                id="password"
+                name="password"
+                type="password"
+                value={loginForm.password}
+                onChange={handleLoginChange}
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200"
+                placeholder="Enter password"
+                autoComplete="current-password"
+                required
+              />
+            </div>
+
+            {loginError && (
+              <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-sm text-red-700">
+                {loginError}
+              </div>
+            )}
+
+            <button
+              type="submit"
+              className="w-full py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-semibold rounded-xl hover:from-emerald-600 hover:to-teal-700 transition-all duration-200"
+            >
+              Login
+            </button>
+          </form>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
