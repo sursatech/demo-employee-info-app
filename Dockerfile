@@ -1,13 +1,18 @@
-FROM node:22-bookworm-slim
+FROM node:22-bookworm-slim AS build
 
 WORKDIR /app
 
 COPY package*.json .
 RUN npm ci
 
-ENV CHOKIDAR_USEPOLLING=true
-ENV CHOKIDAR_INTERVAL=100
+COPY . .
+RUN npm run build
 
-EXPOSE 5173
+FROM nginx:alpine
 
-CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0", "--port", "5173"]
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY --from=build /app/dist /usr/share/nginx/html
+
+EXPOSE 80
+
+CMD ["nginx", "-g", "daemon off;"]

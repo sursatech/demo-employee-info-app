@@ -13,6 +13,7 @@ This file provides working instructions for coding agents in this service.
 - Install dependencies: `npm install`
 - Run development server: `npm run dev -- --host 0.0.0.0 --port 5173`
 - Run development server with Docker: `docker compose up --build`
+- Build production Docker image: `docker build -t <image-name> .`
 - Build production assets: `npm run build`
 - Preview production build: `npm run preview`
 
