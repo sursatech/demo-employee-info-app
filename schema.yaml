@@ -1,0 +1,26 @@
+version: '3.9'
+name: ok
+services:
+  demo-employee-info-app:
+    id: i9s9hei3fpp8a2x49fusa2qu
+    slug: demo-employee-info-app
+    domainSlug: demo-employee-info-app
+    type: application
+    order: 1
+    cpuMillicores: 1000
+    memoryMb: 1024
+    imageUrl: https://avatars.githubusercontent.com/u/60463270?v=4
+    serviceUrl: sursatech/demo-employee-info-app
+    ports:
+      - '80:80'
+    environment:
+      HOST: 0.0.0.0
+      NODE_ENV: development
+      PORT: '80'
+    buildConfig:
+      packages:
+        - node@22.22.0
+      installCommand: npm install
+      startCommand: npm run dev -- --host 0.0.0.0 --port 80
+      ports:
+        - 80
